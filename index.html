@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Gift Wish — Bhutki</title>
+<style>
+  :root{
+    --bg:#071022;
+    --panel: rgba(255,255,255,0.04);
+    --accent:#ffcc33;
+    --white:#fff;
+    --muted:#cbd5e1;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#071022 0%, #0b1630 100%);font-family:Inter,Segoe UI,Roboto,Arial; color:var(--white); overflow:hidden}
+
+/* Common screen */
+.screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:20px;transition:opacity .45s, transform .45s}
+.hidden{pointer-events:none;opacity:0;transform:scale(.98)}
+
+/* ---------- PAGE 1: balloons & name ---------- */
+#page1{overflow:hidden}
+.balloon-area{position:absolute;inset:0;pointer-events:none;z-index:0}
+.balloon{position:absolute;bottom:-160px;border-radius:60% 60% 55% 55%;width:90px;height:120px;display:block;transform-origin:center bottom}
+.balloon:after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:2px;height:60px;background:rgba(0,0,0,0.12);bottom:-58px}
+@keyframes rise {
+  0%{transform:translateY(0) rotate(-6deg);opacity:0}
+  10%{opacity:1}
+  50%{transform:translateY(-45vh) rotate(6deg)}
+  100%{transform:translateY(-140vh) rotate(-10deg);opacity:0}
+}
+
+/* Panel */
+.panel{width:100%;max-width:760px;background:linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));border-radius:16px;padding:26px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.6);backdrop-filter: blur(4px)}
+h1{margin:6px 0 8px;font-size:1.9rem}
+.muted{color:var(--muted)}
+input[type="text"]{width:68%;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:transparent;color:var(--white);font-size:16px}
+.btn{display:inline-block;padding:10px 16px;border-radius:10px;border:none;background:var(--accent);color:#111;font-weight:700;cursor:pointer;margin-left:8px}
+
+/* shake */
+@keyframes shakeX{0%{transform:translateX(0)}25%{transform:translateX(-8px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+.shake{animation:shakeX .55s}
+
+/* ---------- PAGE 2: cake + candles + box ---------- */
+#page2{align-items:flex-start;padding-top:26px}
+.stage{width:100%;max-width:1100px;margin:0 auto;display:flex;gap:28px;align-items:flex-start;justify-content:center;flex-wrap:wrap;padding:12px}
+.leftCol{flex:0 0 520px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.rightCol{flex:1;min-width:300px;display:flex;flex-direction:column;align-items:center;gap:14px}
+
+/* Cake drawn with CSS — no external file */
+.cake-wrap{position:relative;width:420px;height:280px}
+.cake-layer{
+  position:absolute;left:50%;transform:translateX(-50%);border-radius:22px;width:360px;height:120px;background:linear-gradient(180deg,#ffd9d9,#ffb8c7);box-shadow:0 10px 30px rgba(0,0,0,.6);
+  bottom:36px;overflow:visible;
+}
+.cake-decor{position:absolute;left:50%;transform:translateX(-50%);bottom:-6px;width:410px;height:40px;background:linear-gradient(180deg,#c77,#8b3);border-radius:10px}
+
+/* slices (hidden until sliced) */
+.slice{position:absolute;bottom:36px;width:68px;height:120px;border-radius:12px;background:linear-gradient(180deg,#ffd9d9,#ffb8c7);transition:transform .9s ease-in-out}
+.slice.s1{left:60px} .slice.s2{left:125px} .slice.s3{left:190px} .slice.s4{left:255px}
+
+/* when sliced */
+.cake-sliced .slice.s1{transform:translateY(160px) rotate(-6deg)}
+.cake-sliced .slice.s2{transform:translateY(160px) rotate(-2deg)}
+.cake-sliced .slice.s3{transform:translateY(160px) rotate(4deg)}
+.cake-sliced .slice.s4{transform:translateY(160px) rotate(8deg)}
+
+/* candles */
+.candleRow{position:absolute;left:50%;transform:translateX(-50%);bottom:170px;width:360px;display:flex;justify-content:space-between;padding:0 18px}
+.candle{width:18px;height:56px;background:linear-gradient(180deg,#fff,#f5c);border-radius:6px;display:flex;align-items:flex-start;justify-content:center;position:relative}
+.flame{width:22px;height:28px;border-radius:50%;margin-top:-16px;background:radial-gradient(circle,#fff8 10%,#ffd05a 40%,#ff6b2b 60%);box-shadow:0 6px 18px rgba(255,120,60,.35);cursor:pointer;transition:all .45s}
+
+/* message and controls */
+.msg{color:var(--white);font-weight:700}
+.small{font-size:14px;color:var(--muted)}
+
+/* box area (hidden until candles done) */
+.box-area{display:none;align-items:center;flex-direction:column;gap:12px;margin-top:6px}
+.box{
+  width:220px;height:180px;border-radius:10px;background:linear-gradient(180deg,#6b3f24,#4e2a14);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;box-shadow:0 12px 36px rgba(0,0,0,.6)
+}
+.scissor{
+  margin-top:8px;cursor:pointer;border-radius:8px;padding:8px 12px;background:linear-gradient(90deg,#eee,#ccc);color:#111;font-weight:800;box-shadow:0 8px 16px rgba(0,0,0,.35)
+}
+
+/* reveal */
+.revealText{display:none;font-size:34px;font-weight:900;padding:10px 16px;border-radius:10px;background:linear-gradient(90deg,#ffe89e,#fff);color:#111;box-shadow:0 10px 20px rgba(0,0,0,.35)}
+
+/* ---------- PAGE 3: bouncing ---------- */
+#arenaWrap{display:none;align-items:center;flex-direction:column;gap:12px;margin-top:14px;width:100%;max-width:1000px}
+.arena{position:relative;width:100%;height:520px;border-radius:12px;background:linear-gradient(180deg,#081224,#062035);overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.6)}
+#bouncer{position:absolute;width:160px;height:160px;border-radius:12px;will-change:transform;display:flex;align-items:center;justify-content:center}
+#bouncer img{width:100%;height:100%;object-fit:cover;border-radius:8px}
+.pop-msg{position:absolute;left:50%;transform:translateX(-50%);top:18px;padding:8px 14px;border-radius:10px;background:linear-gradient(90deg,#fff,#ffd);color:#111;font-weight:800;display:none;pointer-events:none}
+
+/* responsive */
+@media (max-width:820px){
+  .stage{flex-direction:column;align-items:center}
+  .leftCol{flex-basis:100%}
+  .rightCol{flex-basis:100%}
+  .cake-wrap{width:320px;height:220px}
+  .cake-layer{width:290px;height:100px;bottom:36px}
+  .slice{height:100px;width:56px}
+  #bouncer{width:120px;height:120px}
+}
+</style>
+</head>
+<body>
+
+<!-- PAGE1 -->
+<div id="page1" class="screen">
+  <div class="balloon-area" id="balloonArea"></div>
+
+  <div class="panel" role="main" aria-labelledby="welcomeTitle">
+    <h1 id="welcomeTitle">A Special Surprise</h1>
+    <p class="small">Type the name to enter the surprise</p>
+
+    <div style="margin-top:18px;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap">
+      <input id="nameInput" type="text" placeholder="Enter name..." autocomplete="off" />
+      <button id="enterBtn" class="btn">Enter</button>
+    </div>
+
+    <div style="height:10px"></div>
+    <div><small id="errMsg" style="color:#ff6b6b"></small></div>
+    <p style="margin-top:12px" class="small">Hint: try the special name 😉</p>
+  </div>
+</div>
+
+<!-- PAGE2 -->
+<div id="page2" class="screen hidden">
+  <div class="stage">
+    <div class="leftCol">
+      <h1>Make a Wish — Blow the candles</h1>
+
+      <div class="cake-wrap" aria-hidden="false">
+        <div class="cake-layer" id="cakeLayer">
+          <div class="slice s1"></div>
+          <div class="slice s2"></div>
+          <div class="slice s3"></div>
+          <div class="slice s4"></div>
+        </div>
+        <div class="cake-decor"></div>
+
+        <div class="candleRow" aria-hidden="false">
+          <div class="candle"><div class="flame" data-id="1" title="Click to blow"></div></div>
+          <div class="candle"><div class="flame" data-id="2" title="Click to blow"></div></div>
+          <div class="candle"><div class="flame" data-id="3" title="Click to blow"></div></div>
+          <div class="candle"><div class="flame" data-id="4" title="Click to blow"></div></div>
+          <div class="candle"><div class="flame" data-id="5" title="Click to blow"></div></div>
+        </div>
+      </div>
+
+      <p id="cakeMsg" class="msg">Click each flame to blow it out</p>
+    </div>
+
+    <div class="rightCol">
+      <h2>Surprise Box</h2>
+      <p class="small">After candles are out, open the gift with scissors</p>
+
+      <div class="box-area" id="boxArea" aria-hidden="true">
+        <div class="box" id="boxElem">MYSTERY</div>
+        <button class="scissor" id="scissorBtn">✂️ Cut with Scissors</button>
+      </div>
+
+      <div class="revealText" id="revealText">Bismillah!</div>
+
+      <div id="arenaWrap">
+        <div class="arena" id="arena">
+          <div id="bouncer" aria-hidden="true"><img id="surpriseImg" src="photo_2025-11-29_14-46-58.jpg" alt="surprise image" /></div>
+          <div class="pop-msg" id="popMsg">Bismillah Happy Birthday</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="position:absolute;left:18px;top:18px">
+    <button class="btn" id="backToStart">Restart</button>
+  </div>
+</div>
+
+<script>
+/* ---------------- Page1 logic ---------------- */
+const page1 = document.getElementById('page1');
+const page2 = document.getElementById('page2');
+const nameInput = document.getElementById('nameInput');
+const enterBtn = document.getElementById('enterBtn');
+const errMsg = document.getElementById('errMsg');
+
+function show(page){
+  // hide all, show requested
+  [page1,page2].forEach(p => p.classList.add('hidden'));
+  page.classList.remove('hidden');
+}
+
+/* balloons generator */
+const balloonArea = document.getElementById('balloonArea');
+function spawnBalloon(){
+  const b = document.createElement('div');
+  b.className = 'balloon';
+  const w = 70 + Math.random()*60;
+  b.style.width = w + 'px';
+  b.style.height = Math.round(w*1.2) + 'px';
+  b.style.left = (Math.random()*80 + 5) + '%';
+  b.style.background = `radial-gradient(circle at 30% 20%, hsl(${Math.random()*360} 90% 70%), hsl(${Math.random()*360} 80% 55%))`;
+  const dur = 8 + Math.random()*8;
+  b.style.animation = `rise ${dur}s linear`;
+  balloonArea.appendChild(b);
+  setTimeout(()=> b.remove(), (dur+1)*1000);
+}
+setInterval(spawnBalloon, 700);
+
+/* name check */
+enterBtn.addEventListener('click', checkName);
+nameInput.addEventListener('keydown', (e)=>{ if(e.key==='Enter') checkName(); });
+
+function checkName(){
+  const v = (nameInput.value || '').trim().toLowerCase();
+  if(v === 'bhutki'){
+    errMsg.textContent = '';
+    nameInput.value = '';
+    goToCake();
+  } else {
+    errMsg.textContent = 'Wrong name — enter again!';
+    nameInput.classList.add('shake');
+    setTimeout(()=> nameInput.classList.remove('shake'), 600);
+  }
+}
+
+/* ---------------- Page2 (cake & box & bounce) ---------------- */
+const flames = Array.from(document.querySelectorAll('.flame'));
+const cakeMsg = document.getElementById('cakeMsg');
+const boxArea = document.getElementById('boxArea');
+const scissorBtn = document.getElementById('scissorBtn');
+const revealText = document.getElementById('revealText');
+const arenaWrap = document.getElementById('arenaWrap');
+const arena = document.getElementById('arena');
+const bouncer = document.getElementById('bouncer');
+const surpriseImg = document.getElementById('surpriseImg');
+const popMsg = document.getElementById('popMsg');
+const boxElem = document.getElementById('boxElem');
+const backToStart = document.getElementById('backToStart');
+
+let blownCount = 0;
+const totalCandles = flames.length;
+let sliced = false;
+
+/* Make flames easier to click: give them keyboard accessibility */
+flames.forEach(f => {
+  f.tabIndex = 0;
+  f.addEventListener('click', blowOne);
+  f.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') blowOne.call(f); });
+});
+
+function blowOne(){
+  if(this.classList.contains('out')) return;
+  this.classList.add('out');
+  this.style.opacity = 0;
+  this.style.transform = 'scale(.6) translateY(-6px)';
+  this.style.pointerEvents = 'none';
+  blownCount++;
+  cakeMsg.textContent = `Blown: ${blownCount} / ${totalCandles}`;
+  if(blownCount >= totalCandles){
+    cakeMsg.textContent = 'All candles are out! The mystery box appeared.';
+    // small delay then reveal box area
+    setTimeout(()=> {
+      boxArea.style.display = 'flex';
+      boxArea.setAttribute('aria-hidden','false');
+      // animate box entrance
+      boxArea.style.opacity = '0';
+      boxArea.style.transform = 'translateY(10px)';
+      requestAnimationFrame(()=>{ boxArea.style.transition = 'all .6s ease'; boxArea.style.opacity = 1; boxArea.style.transform = 'translateY(0)'; });
+    }, 600);
+  }
+}
+
+/* Scissor: cut the box */
+scissorBtn.addEventListener('click', ()=> {
+  if(sliced) return;
+  sliced = true;
+  // animate scissor button
+  scissorBtn.style.transform = 'rotate(-10deg) scale(.98)';
+  scissorBtn.disabled = true;
+  // animate box "cut" => shrink and then disappear
+  boxElem.style.transition = 'all .8s ease';
+  boxElem.style.transform = 'scaleY(.1) translateY(40px)';
+  boxElem.style.opacity = '0';
+  setTimeout(()=> {
+    revealText.style.display = 'block';
+    revealText.style.opacity = '0';
+    revealText.style.transform = 'translateY(10px)';
+    requestAnimationFrame(()=> {
+      revealText.style.transition = 'all .6s ease';
+      revealText.style.opacity = '1';
+      revealText.style.transform = 'translateY(0)';
+    });
+    // then after small delay, show arena and start bouncing
+    setTimeout(()=> {
+      arenaWrap.style.display = 'flex';
+      arenaWrap.style.opacity = '0';
+      arenaWrap.style.transform = 'translateY(8px)';
+      requestAnimationFrame(()=> {
+        arenaWrap.style.transition = 'all .6s ease';
+        arenaWrap.style.opacity = '1';
+        arenaWrap.style.transform = 'translateY(0)';
+      });
+      startBouncer();
+    }, 900);
+  }, 700);
+});
+
+/* Handle restart */
+backToStart.addEventListener('click', ()=> location.reload());
+
+/* ----------- BOUNCER (ping-pong) -------------- */
+let vx = 280, vy = 180; // pixels per second
+let pos = {x:60, y:60};
+let last = null;
+let raf = null;
+let arenaRect = null;
+let bouncerSize = {w:0,h:0};
+
+function startBouncer(){
+  // reset velocities random direction
+  vx = (Math.random()>0.5?1:-1) * (220 + Math.random()*140);
+  vy = (Math.random()>0.5?1:-1) * (160 + Math.random()*120);
+  pos = { x: 40, y: 40 };
+  last = performance.now();
+  // ensure image loaded fallback
+  surpriseImg.addEventListener('error', ()=> {
+    surpriseImg.style.background = '#222';
+    surpriseImg.style.display = 'flex';
+    surpriseImg.style.alignItems = 'center';
+    surpriseImg.style.justifyContent = 'center';
+    surpriseImg.alt = 'Image missing: put file photo_2025-11-29_14-46-58.jpg in same folder';
+    surpriseImg.src = '';
+    surpriseImg.textContent = 'Image Missing';
+  });
+  // set bouncer initial pos
+  updateArenaMetrics();
+  bouncer.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+  // show bouncer
+  bouncer.style.display = 'block';
+  // start loop
+  cancelAnimationFrame(raf);
+  raf = requestAnimationFrame(loop);
+  // ensure arena metrics update on resize
+  window.addEventListener('resize', updateArenaMetrics);
+}
+
+function updateArenaMetrics(){
+  arenaRect = arena.getBoundingClientRect();
+  bouncerSize.w = bouncer.offsetWidth;
+  bouncerSize.h = bouncer.offsetHeight;
+}
+
+function loop(now){
+  const dt = (now - last) / 1000;
+  last = now;
+  pos.x += vx * dt;
+  pos.y += vy * dt;
+
+  let collided = false;
+
+  // left/right collisions
+  if(pos.x <= 0){
+    pos.x = 0;
+    vx = Math.abs(vx);
+    collided = true;
+  } else if(pos.x + bouncerSize.w >= arena.clientWidth){
+    pos.x = arena.clientWidth - bouncerSize.w;
+    vx = -Math.abs(vx);
+    collided = true;
+  }
+
+  // top/bottom collisions
+  if(pos.y <= 0){
+    pos.y = 0;
+    vy = Math.abs(vy);
+    collided = true;
+  } else if(pos.y + bouncerSize.h >= arena.clientHeight){
+    pos.y = arena.clientHeight - bouncerSize.h;
+    vy = -Math.abs(vy);
+    collided = true;
+  }
+
+  bouncer.style.transform = `translate(${pos.x}px, ${pos.y}px)`;
+
+  if(collided){
+    showPopMessage();
+    speakMessage();
+  }
+
+  raf = requestAnimationFrame(loop);
+}
+
+/* pop message shown briefly */
+let popTimeout = null;
+function showPopMessage(){
+  popMsg.style.display = 'block';
+  popMsg.style.opacity = '1';
+  popMsg.animate([{ transform:'translateY(0)', opacity:1 }, { transform:'translateY(-18px)', opacity:0 }], { duration: 800, easing: 'ease-out' });
+  clearTimeout(popTimeout);
+  popTimeout = setTimeout(()=> { popMsg.style.display = 'none'; }, 850);
+}
+
+/* speak (once per collision) */
+function speakMessage(){
+  // use SpeechSynthesis
+  try {
+    const u = new SpeechSynthesisUtterance('Bismillah Happy Birthday');
+    // optionally lower pitch/volume
+    u.rate = 0.95;
+    window.speechSynthesis.cancel(); // cancel any queued to play immediately
+    window.speechSynthesis.speak(u);
+  } catch(e){
+    // ignore if not supported
+    console.warn('speech not supported', e);
+  }
+}
+
+/* navigation helper */
+function goToCake(){
+  show(page2);
+  // reset states
+  flames.forEach(f => { f.classList.remove('out'); f.style.opacity = 1; f.style.transform = ''; f.style.pointerEvents = 'auto'; });
+  boxArea.style.display = 'none';
+  revealText.style.display = 'none';
+  arenaWrap.style.display = 'none';
+  bouncer.style.display = 'none';
+  blownCount = 0;
+  cakeMsg.textContent = 'Click each flame to blow it out';
+}
+
+/* initial show */
+show(page1);
+
+/* If user used Enter on name, show cake */
+function goToCakeFromBtn(){
+  goToCake();
+}
+function goToCake(){
+  show(page2);
+  // small entrance animation
+  page2.style.opacity = 0;
+  requestAnimationFrame(()=> { page2.style.transition = 'opacity .6s'; page2.style.opacity = 1; });
+}
+</script>
+
+</body>
+</html>
